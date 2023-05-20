@@ -15,3 +15,25 @@ At the moment there are three (probably buggy) features:
 | 2 | :ErbnavigatorViews | require("erb-navigator.views_jumplist").nav() |
 | 3 | :ErbnavigatorGoPartial | require("erb-navigator.views_jumplist").go_partial() |
 
+## default settings
+
+```lua
+require('erb-navigator').setup({
+    comment_jumplist = {
+        regex = "<%%# *(.*) *%%>", -- the regex used to extract the comments
+        line_numbers = true, -- show the line numbers in the list
+        width = 100, -- width of the window
+        height = 30, -- height of the window
+        borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }, -- the borders, nil means no border
+    },
+    views_jumplist = {
+        line_numbers = true, -- show the line numbers in the list
+        width = 100, -- width of the window
+        height = 30, -- height of the window
+        borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }, -- the borders, nil means no border
+        filter_path = nil, -- a regex for files to be removed from the list. (e.g. '/?common/?')
+        partial_regex = "<%%=%s*render[^\"']*[\"']([a-zA-Z_/]+)", -- regex to extract the partial-names
+    },
+})  
+
+```
