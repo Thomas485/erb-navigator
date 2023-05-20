@@ -1,17 +1,20 @@
 local plenary = require("plenary")
+local settings = require("erb-navigator.settings")
 
 local utility = require("erb-navigator.utility")
 
 local M = {}
 
-M.settings = {
-    line_numbers = true,
-    width = 100,
-    height = 30,
-    borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
-    filter_path = "/?common/?",
-    partial_regex = "<%%=%s*render[^\"']*[\"']([a-zA-Z_/]+)",
-}
+settings.settings = vim.tbl_deep_extend("force", settings.settings, {
+    views_jumplist = {
+        line_numbers = true, -- show the line numbers in the list
+        width = 100, -- width of the window
+        height = 30, -- height of the window
+        borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }, -- the borders, nil means no border
+        filter_path = nil, -- a regex for files to be removed from the list. (e.g. '/?common/?')
+        partial_regex = "<%%=%s*render[^\"']*[\"']([a-zA-Z_/]+)", -- regex to extract the partial-names
+    }
+})
 
 local function is_controller(buffer)
     local name = nil
@@ -46,6 +49,7 @@ local function create_buffer(content)
 end
 
 local function create_window(buffer, height, width)
+    local settings = settings.settings.views_jumplist
     local title = vim.api.nvim_buf_get_name(0)
     if title == "" then
         title = "erb-navigator"
@@ -57,10 +61,10 @@ local function create_window(buffer, height, width)
         col = math.floor((vim.o.columns - width) / 2),
         minwidth = width,
         minheight = height,
-        borderchars = M.settings.borderchars,
+        borderchars = settings.borderchars,
     })
 
-    if M.settings.line_numbers then
+    if settings.line_numbers then
         vim.api.nvim_win_set_option(win, "number", true)
     end
 
@@ -91,6 +95,7 @@ local function append_path(partials, paths, prefix)
 end
 
 function M.nav()
+    local settings = settings.settings.views_jumplist
     local app_root = vim.fs.find("app", { upward = true })
     local filename = vim.api.nvim_buf_get_name(0)
     if is_controller(filename) then
@@ -103,7 +108,7 @@ function M.nav()
     elseif is_erb(filename) then
         local buffer_content = table.concat(utility.get_buffer(0), "\n")
         local partials = {}
-        for partial in  string.gmatch(buffer_content, M.settings.partial_regex) do
+        for partial in  string.gmatch(buffer_content, settings.partial_regex) do
             table.insert(partials, partial)
         end
 
@@ -118,24 +123,28 @@ function M.nav()
         end
 
         -- TODO: not assuming there is only one file found
-        paths, partials = filter_out(vim.tbl_flatten(paths), partials, M.settings.filter_path)
+        if settings.filter_path then
+            paths, partials = filter_out(vim.tbl_flatten(paths), partials, settings.filter_path)
+        else
+            paths = vim.tbl_flatten(paths)
+        end
 
         M.state = paths
 
-        print(app_root[1])
         local buffer = create_buffer(append_path(partials, paths, app_root[1] .. "/"))
 
-        create_window(buffer, M.settings.height, M.settings.width)
+        create_window(buffer, settings.height, settings.width)
     end
 end
 
 -- go to the partial in the current line.
 function M.go_partial()
+    local settings = settings.settings.views_jumplist
     local app_root = vim.fs.find("app", { upward = true })
 
     local line_number, _ = unpack(vim.api.nvim_win_get_cursor(0))
     local current_line = vim.api.nvim_buf_get_lines(0, line_number-1, line_number, true)
-    local name = string.match(current_line[1], M.settings.partial_regex)
+    local name = string.match(current_line[1], settings.partial_regex)
 
     if name and name ~= "" then
         local path =  vim.fs.find(to_partial_name(name), { path=app_root[1] .. "/views", type = "file" })
