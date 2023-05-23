@@ -38,3 +38,8 @@ require('erb-navigator').setup({
 })  
 
 ```
+
+## screenshots
+
+![erbnavigator4](https://github.com/Thomas485/erb-navigator/assets/1681511/39009081-2b2e-4e8f-b774-1293f2d79dd7)
+
