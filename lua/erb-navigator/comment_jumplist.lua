@@ -56,16 +56,14 @@ end
 local function create_buffer(content)
     local buffer = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_lines(buffer, -2, -1, true, content)
+    vim.api.nvim_buf_set_option(buffer, 'readonly', true)
     set_keys(buffer)
     return buffer
 end
 
 local function create_window(buffer, height, width)
     local settings = settings.settings.comment_jumplist
-    local title = vim.api.nvim_buf_get_name(0)
-    if title == "" then
-        title = "erb-navigator"
-    end
+    local title = utility.get_title(0)
 
     local win, _ = plenary.popup.create(buffer, {
         title = title,
