@@ -11,9 +11,9 @@ At the moment there are three (probably buggy) features:
 
 | No. | command | lua |
 |---|---|---|
-| 1 | :Erbnavigator | require("erb-navigator.comment_jumplist").nav() |
-| 2 | :ErbnavigatorViews | require("erb-navigator.views_jumplist").nav() |
-| 3 | :ErbnavigatorGoPartial | require("erb-navigator.views_jumplist").go_partial() |
+| 1 | :Erbnavigator | require("erb-navigator.comment\_jumplist").nav() |
+| 2 | :ErbnavigatorViews | require("erb-navigator.views\_jumplist").nav() |
+| 3 | :ErbnavigatorGoPartial | require("erb-navigator.views\_jumplist").go\_partial() |
 
 ## default settings
 
@@ -25,6 +25,7 @@ require('erb-navigator').setup({
         width = 100, -- width of the window
         height = 30, -- height of the window
         borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }, -- the borders, nil means no border
+        keep_indent = true, -- preserve the indentation of the file (shows the values in a hierarchical manner)
     },
     views_jumplist = {
         line_numbers = true, -- show the line numbers in the list

@@ -7,22 +7,41 @@ local utility = require("erb-navigator.utility")
 
 settings.settings = vim.tbl_deep_extend("force", settings.settings, {
     comment_jumplist = {
-        regex = "<%%# *(.*) *%%>", -- the regex used to extract the comments
+        regex = "(%s*)<%%# *(.*) *%%>", -- the regex used to extract the comments
         line_numbers = true, -- show the line numbers in the list
         width = 100, -- width of the window
         height = 30, -- height of the window
         borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }, -- the borders, nil means no border
+        keep_indent = true, -- preserve the indentation of the file (shows the values in a hierarchical manner)
     }
 })
 
 local function filter_comments(content)
     local settings = settings.settings.comment_jumplist
     local numbers, values = {}, {}
+    local indentations = {}
     for i, v in ipairs(content) do
-        local line = string.match(v, settings.regex)
+        local indent, line = string.match(v, settings.regex)
         if line then
-            numbers[#numbers+1] = i
-            values[#values+1] = line
+            if settings.keep_indent then
+                numbers[#numbers+1] = i
+                values[#values+1] = indent .. line
+                table.insert(indentations, #indent)
+            else
+                numbers[#numbers+1] = i
+                values[#values+1] = line
+            end
+        end
+    end
+
+    -- strip down indentation
+    if settings.keep_indent then
+        local min_indentation = math.huge
+        for _, indent in ipairs(indentations) do
+            min_indentation = min_indentation < indent and min_indentation or  indent
+        end
+        for i = 1, #values, 1 do
+            values[i] = string.sub(values[i], min_indentation+1)
         end
     end
     return numbers, values
